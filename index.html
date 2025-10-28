@@ -9,11 +9,14 @@
         /* Custom font for authenticity, though Inter is used as default */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #2c3e50; /* Darker background to simulate device frame */
+            /* Ensure body and html tags take up the full available height */
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            padding: 0; /* Important: remove default padding/margin */
+            margin: 0;
+            overflow: hidden; /* Prevent body scrollbar */
         }
 
         /* ---------------------------------- */
@@ -29,7 +32,8 @@
 
         .header-section {
             width: 100%;
-            height: 128px; /* Half of the total header height (256px) */
+            /* UPDATED: 10vh (Half of 20vh header) */
+            height: 10vh;
             background-size: 200% 100%; /* Double the width for seamless scrolling */
             background-repeat: repeat-x;
             animation: colorScroll 12s linear infinite;
@@ -52,7 +56,8 @@
         /* ---------------------------------- */
         .header-wrapper {
             position: relative;
-            height: 256px; /* Combined height of header-top (128) + header-bottom (128) */
+            /* UPDATED: 20% of the viewport height */
+            height: 20vh;
             overflow: hidden;
             z-index: 10;
         }
@@ -64,30 +69,70 @@
             transform: translate(-50%, -50%); /* Center horizontally and vertically */
             z-index: 20; /* Ensure text is above all color layers */
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            font-size: 6vw; /* Use viewport width for responsive text size */
         }
 
         /* ---------------------------------- */
         /* Main Content Styling with Image */
         /* ---------------------------------- */
         .main-ticket-area {
-            background:
-                url('background.jpg') no-repeat center / 100% auto,
-                linear-gradient(to bottom, #d5eaff, #c8e3ff);
+            /* Keep light blue background as a fallback */
+            background: linear-gradient(to bottom, #d5eaff, #c8e3ff);
             margin-top: 0;
             position: relative;
+            /* UPDATED: 65% of the viewport height (100vh - 20vh header - 15vh footer) */
+            height: 65vh;
+            /* Ensure the content (now the img tag) is centered within the main area */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Style for the new IMG element inside the main area */
+        .ticket-image {
+            width: 100%;
+            height: 100%;
+            /* object-fit: contain ensures the full image is visible, even if it leaves space */
+            object-fit: contain;
         }
 
         /* ---------------------------------- */
-        /* Dynamic Time Bar Styling */
+        /* Combined Footer Styling (Time Bar + Footer Bar) */
         /* ---------------------------------- */
-        .time-bar {
-            background-color: #0b73b5; /* Dark blue background matching the original image's date bar */
+        #ticket-footer {
+            /* UPDATED: 15% of the viewport height */
+            height: 15vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: stretch; /* Stretch children to fill vertical space */
+            background-color: #1f4095; /* Base color for the whole footer */
             color: white;
-            /* INCREASED: Padding for taller bar, font size for larger text */
-            padding: 1rem 1rem;
+        }
+
+        /* Dynamic Time Bar Styling - now fills the top part of the 15vh footer */
+        .time-bar {
+            /* Take 50% of the 15vh footer height (approx 7.5vh) */
+            height: 50%;
+            background-color: #0b73b5; /* Dark blue background matching the original image's date bar */
+            display: flex;
+            align-items: center;
+            justify-content: center;
             text-align: center;
-            font-size: 1.5rem;
+            padding: 0 1rem;
+            /* UPDATED: Increased font size from 4vw to 5vw */
+            font-size: 5vw;
             font-weight: 600;
+        }
+
+        /* Expiration Text Area - now fills the bottom part of the 15vh footer */
+        .expiration-text-area {
+            /* Take 50% of the 15vh footer height (approx 7.5vh) */
+            height: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0 1rem;
         }
 
         /* Home Screen Specific Styling */
@@ -96,8 +141,14 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100%;
+            /* UPDATED: Set height to 100vh to ensure it fills the entire viewport */
+            height: 100vh;
+            width: 100vw; /* Ensure it's full width as well */
+            position: fixed; /* Fix position to ensure it covers everything outside the ticket view */
+            top: 0;
+            left: 0;
             background-color: #ecf0f1; /* Light gray background for home screen */
+            z-index: 50; /* Ensure it sits above the app-container's background, though app-container is already full screen */
         }
 
         .ticket-button {
@@ -119,9 +170,11 @@
     </style>
 </head>
 <body class="p-0 m-0">
-    <div id="app-container" class="w-full max-w-sm h-[85vh] bg-white shadow-2xl overflow-hidden flex flex-col">
+    <!-- CRITICAL CHANGE: Removed max-w-sm and h-[85vh], added min-h-screen for full viewport height -->
+    <div id="app-container" class="w-full min-h-screen bg-white shadow-2xl overflow-hidden flex flex-col">
 
         <!-- This is the main content target for conditional rendering -->
+        <!-- FIX: Added h-full to app-content to ensure it uses the full height of its container (app-container) -->
         <div id="app-content" class="h-full flex flex-col">
             <!-- Content will be injected here by JavaScript -->
         </div>
@@ -178,6 +231,7 @@
          * Renders the home screen with the "Open Ticket" button.
          */
         function renderHome() {
+            // NOTE: The #home-screen CSS ensures it takes up 100vh and centers the content.
             appContent.innerHTML = `
                 <div id="home-screen">
                     <h1 class="text-3xl font-semibold mb-8 text-gray-700">Metro Transit App</h1>
@@ -209,20 +263,30 @@
                 </header>
 
                 <!-- 2. Main Ticket Body (Static Image) -->
-                <main class="main-ticket-area flex-grow flex flex-col justify-end p-0">
-                    <!-- This area now relies on the background image for "LOCAL SINGLE RIDE" and QR code -->
+                <!-- Set to height: 65vh -->
+                <main class="main-ticket-area flex flex-col justify-end p-0">
+                    <!-- IMAGE TAG REPLACING CSS BACKGROUND IMAGE -->
+                    <img
+                        src="ticket-bg.jpg"
+                        class="ticket-image"
+                        alt="Local Single Ride Ticket Background with QR Code"
+                        onerror="this.onerror=null;this.src='https://placehold.co/1600x1200/C8E3FF/1F4095?text=LOCAL+SINGLE+RIDE%0A%0AQR+CODE';"
+                    />
                 </main>
 
-                <!-- 3. Dynamic Date/Time Bar -->
-                <div class="time-bar">
-                    <p id="time-display"></p>
-                </div>
+                <!-- 3. Combined Dynamic Footer (Time Bar + Expiration Text) -->
+                <footer id="ticket-footer">
+                    <!-- Time Bar (Top 50% of 15vh footer) -->
+                    <div class="time-bar">
+                        <p id="time-display"></p>
+                    </div>
 
-                <!-- 4. Footer Bar -->
-                <footer class="bg-[#1f4095] text-white p-5 text-center">
-                    <p id="expiration-text" class="text-xl font-semibold tracking-wider uppercase">
-                        Ticket Expiration
-                    </p>
+                    <!-- Expiration Text Area (Bottom 50% of 15vh footer) -->
+                    <div class="expiration-text-area">
+                        <p id="expiration-text" class="text-xl font-semibold tracking-wider uppercase">
+                            Ticket Expiration
+                        </p>
+                    </div>
                 </footer>
             `;
             appState = 'ticket';
